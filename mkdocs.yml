@@ -37,7 +37,15 @@ theme:
 nav:
   - Home: index.md
   - Architecture: architecture.md
-  - Deployment Guide: deployment-guide.md
+  - Why Not the ITSM Connector?: why-not-itsm-connector.md
+  - Deployment:
+    - Overview: deployment-guide.md
+    - John Joyner's Guide (Manual): deploy-john-joyner.md
+    - Bicep: deploy-bicep.md
+    - Terraform: deploy-terraform.md
+    - Ansible: deploy-ansible.md
+    - PowerShell / Azure CLI: deploy-powershell.md
+    - CI/CD Pipelines: deploy-cicd.md
   - ServiceNow PDI Setup: servicenow-pdi-setup.md
 
 plugins:

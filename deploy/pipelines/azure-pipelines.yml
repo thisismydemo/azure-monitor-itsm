@@ -1,0 +1,53 @@
+trigger: none  # Manual runs only
+
+parameters:
+  - name: resourceGroup
+    displayName: Resource Group
+    type: string
+    default: rg-azure-monitor-itsm
+  - name: location
+    displayName: Azure Region
+    type: string
+    default: eastus
+  - name: snowInstanceUrl
+    displayName: ServiceNow Instance URL
+    type: string
+  - name: snowUsername
+    displayName: ServiceNow Username
+    type: string
+  - name: deploymentMethod
+    displayName: Deployment Method
+    type: string
+    default: Bicep
+    values:
+      - Bicep
+      - Terraform
+      - ARM
+      - Ansible
+
+variables:
+  - group: azure-monitor-itsm-secrets  # Variable group containing SNOW_PASSWORD
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+  - checkout: self
+
+  - task: AzurePowerShell@5
+    displayName: Deploy Azure Monitor → ServiceNow Integration
+    inputs:
+      azureSubscription: 'azure-monitor-itsm-service-connection'
+      ScriptType: InlineScript
+      Inline: |
+        $pw = ConvertTo-SecureString '$(SNOW_PASSWORD)' -AsPlainText -Force
+        .\deploy\scripts\Deploy-Solution.ps1 `
+          -ResourceGroupName '${{ parameters.resourceGroup }}' `
+          -Location '${{ parameters.location }}' `
+          -SnowInstanceUrl '${{ parameters.snowInstanceUrl }}' `
+          -SnowUsername '${{ parameters.snowUsername }}' `
+          -SnowPassword $pw `
+          -DeploymentMethod ${{ parameters.deploymentMethod }} `
+          -SkipTest
+      azurePowerShellVersion: LatestVersion
+      pwsh: true

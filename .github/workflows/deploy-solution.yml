@@ -1,0 +1,64 @@
+name: Deploy Azure Monitor → ServiceNow Integration
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource_group:
+        description: 'Resource group name'
+        required: true
+        default: 'rg-azure-monitor-itsm'
+      location:
+        description: 'Azure region'
+        required: true
+        default: 'eastus'
+      snow_instance_url:
+        description: 'ServiceNow instance URL (e.g. https://dev123456.service-now.com)'
+        required: true
+      snow_username:
+        description: 'ServiceNow integration account username'
+        required: true
+      deployment_method:
+        description: 'IaC method'
+        required: true
+        default: 'Bicep'
+        type: choice
+        options: [Bicep, Terraform, ARM, Ansible]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Integration
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Az PowerShell module
+        shell: pwsh
+        run: Install-Module Az -Scope CurrentUser -Force -AllowClobber
+
+      - name: Deploy Integration
+        shell: pwsh
+        env:
+          SNOW_PASSWORD: ${{ secrets.SNOW_PASSWORD }}
+        run: |
+          $pw = ConvertTo-SecureString $env:SNOW_PASSWORD -AsPlainText -Force
+          .\deploy\scripts\Deploy-Solution.ps1 `
+            -ResourceGroupName '${{ inputs.resource_group }}' `
+            -Location '${{ inputs.location }}' `
+            -SnowInstanceUrl '${{ inputs.snow_instance_url }}' `
+            -SnowUsername '${{ inputs.snow_username }}' `
+            -SnowPassword $pw `
+            -DeploymentMethod ${{ inputs.deployment_method }} `
+            -SkipTest
