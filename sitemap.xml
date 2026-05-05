@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://thisismydemo.cloud/azure-monitor-itsm/</loc>
+         <lastmod>2026-05-05</lastmod>
+    </url>
+    <url>
+         <loc>https://thisismydemo.cloud/azure-monitor-itsm/architecture/</loc>
+         <lastmod>2026-05-05</lastmod>
+    </url>
+    <url>
+         <loc>https://thisismydemo.cloud/azure-monitor-itsm/deployment-guide/</loc>
+         <lastmod>2026-05-05</lastmod>
+    </url>
+    <url>
+         <loc>https://thisismydemo.cloud/azure-monitor-itsm/servicenow-pdi-setup/</loc>
+         <lastmod>2026-05-05</lastmod>
+    </url>
+</urlset>

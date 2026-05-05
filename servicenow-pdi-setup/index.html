@@ -1,0 +1,1366 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Fully automated, repeatable solution connecting Azure Monitor alerts to ServiceNow using Logic Apps — based on John Joyner's (Microsoft MVP) guide.">
+      
+      
+      
+        <link rel="canonical" href="https://thisismydemo.cloud/azure-monitor-itsm/servicenow-pdi-setup/">
+      
+      
+        <link rel="prev" href="../deployment-guide/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>ServiceNow PDI Setup - Azure Monitor → ServiceNow Integration</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#servicenow-pdi-developer-environment-setup" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Azure Monitor → ServiceNow Integration" class="md-header__button md-logo" aria-label="Azure Monitor → ServiceNow Integration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Azure Monitor → ServiceNow Integration
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ServiceNow PDI Setup
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/thisismydemo/azure-monitor-itsm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thisismydemo/azure-monitor-itsm
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../deployment-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Deployment Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  ServiceNow PDI Setup
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Azure Monitor → ServiceNow Integration" class="md-nav__button md-logo" aria-label="Azure Monitor → ServiceNow Integration" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Azure Monitor → ServiceNow Integration
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/thisismydemo/azure-monitor-itsm" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    thisismydemo/azure-monitor-itsm
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ServiceNow PDI Setup
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ServiceNow PDI Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-pdi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is a PDI?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-get-a-pdi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Get a PDI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-first-login-and-orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: First Login and Orientation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-wake-a-hibernated-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Wake a Hibernated Instance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-automated-setup-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Automated Setup (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-manual-setup-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Manual Setup (Alternative)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Manual Setup (Alternative)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-the-integration-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create the Integration User
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assign-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assign Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-configure-the-business-rule-bi-directional-close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Configure the Business Rule (Bi-Directional Close)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 6: Configure the Business Rule (Bi-Directional Close)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-the-close-logic-app-webhook-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the Close Logic App Webhook URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-business-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create the Business Rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-7-verify-in-the-snow-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Verify in the SNOW UI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-8-test-the-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 8: Test the Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snow-table-api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SNOW Table API Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correlation-id-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correlation ID Pattern
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rest-api-explorer-pdi-built-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REST API Explorer (PDI Built-In)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-mock-no-snow-account-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Mock (No SNOW Account Required)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dev Container
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-a-pdi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is a PDI?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-get-a-pdi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: Get a PDI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-first-login-and-orientation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: First Login and Orientation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-wake-a-hibernated-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 3: Wake a Hibernated Instance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-automated-setup-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 4: Automated Setup (Recommended)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-manual-setup-alternative" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Manual Setup (Alternative)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Manual Setup (Alternative)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#create-the-integration-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create the Integration User
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assign-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assign Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-6-configure-the-business-rule-bi-directional-close" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 6: Configure the Business Rule (Bi-Directional Close)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 6: Configure the Business Rule (Bi-Directional Close)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get-the-close-logic-app-webhook-url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Get the Close Logic App Webhook URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#create-the-business-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Create the Business Rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-7-verify-in-the-snow-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 7: Verify in the SNOW UI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-8-test-the-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 8: Test the Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#snow-table-api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SNOW Table API Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#correlation-id-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Correlation ID Pattern
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rest-api-explorer-pdi-built-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REST API Explorer (PDI Built-In)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#local-mock-no-snow-account-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Mock (No SNOW Account Required)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dev-container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dev Container
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="servicenow-pdi-developer-environment-setup">ServiceNow PDI Developer Environment Setup<a class="headerlink" href="#servicenow-pdi-developer-environment-setup" title="Permanent link">&para;</a></h1>
+<p>This guide walks through getting a free ServiceNow Personal Developer Instance (PDI) and configuring it for the Azure Monitor integration. If you don't want to use a live SNOW instance at all, skip to <a href="#local-mock-no-snow-account-required">Local Mock (No SNOW account required)</a>.</p>
+<h2 id="what-is-a-pdi">What is a PDI?<a class="headerlink" href="#what-is-a-pdi" title="Permanent link">&para;</a></h2>
+<p>A ServiceNow PDI is a free, full-featured ServiceNow instance available to any developer who registers at <a href="https://developer.servicenow.com">developer.servicenow.com</a>. It includes ITSM, ITOM, Table API, Integration Hub, Flow Designer — everything needed to test this integration.</p>
+<p><strong>PDI facts:</strong>
+- Completely free — no credit card, no trial expiry
+- Same platform as enterprise ServiceNow — full Table API, Business Rules, CMDB
+- Hibernates after ~10 days of inactivity (you get email warnings before it sleeps)
+- Wakes back up in ~5 minutes when you log in; or request a new one if it expired
+- Outbound email is disabled by ServiceNow (not relevant for this integration)
+- Do NOT use ServiceNow Learning Lab instances — those are temporary and get wiped</p>
+<hr />
+<h2 id="step-1-get-a-pdi">Step 1: Get a PDI<a class="headerlink" href="#step-1-get-a-pdi" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Go to <a href="https://developer.servicenow.com">developer.servicenow.com</a></li>
+<li>Click <strong>Sign In</strong> → <strong>Create Account</strong> (free)</li>
+<li>After login, click <strong>Start Building</strong> or go to <strong>My Instance</strong> in the header</li>
+<li>Click <strong>Request Instance</strong></li>
+<li>Select your ServiceNow release — <strong>Washington DC (or later)</strong> recommended for this integration</li>
+<li>Wait 2–5 minutes for provisioning</li>
+<li>Copy your instance URL (e.g., <code>https://dev123456.service-now.com</code>) and note your admin credentials</li>
+</ol>
+<hr />
+<h2 id="step-2-first-login-and-orientation">Step 2: First Login and Orientation<a class="headerlink" href="#step-2-first-login-and-orientation" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Open your instance URL in a browser and log in as <code>admin</code></li>
+<li>On first login you may see a <strong>Setup Wizard</strong> — you can dismiss it</li>
+<li>Key navigation for this integration:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Where to go</th>
+<th>How to get there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Incidents list</td>
+<td><strong>Service Desk → Incidents</strong> (or search <code>incident.list</code> in the nav filter)</td>
+</tr>
+<tr>
+<td>Users</td>
+<td><strong>User Administration → Users</strong></td>
+</tr>
+<tr>
+<td>Business Rules</td>
+<td><strong>System Definition → Business Rules</strong></td>
+</tr>
+<tr>
+<td>REST API Explorer</td>
+<td><strong>System Web Services → REST API Explorer</strong></td>
+</tr>
+<tr>
+<td>Application Registry</td>
+<td><strong>System OAuth → Application Registry</strong></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Verify the Table API works from your browser:
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://dev123456.service-now.com/api/now/table/incident?sysparm_limit=5
+</code></pre></div>
+   You should see a JSON response with sample incidents (browser will prompt for credentials).</li>
+</ol>
+<hr />
+<h2 id="step-3-wake-a-hibernated-instance">Step 3: Wake a Hibernated Instance<a class="headerlink" href="#step-3-wake-a-hibernated-instance" title="Permanent link">&para;</a></h2>
+<p>If your PDI hibernated:</p>
+<ol>
+<li>Go to <a href="https://developer.servicenow.com">developer.servicenow.com</a> → <strong>My Instance</strong></li>
+<li>Click <strong>Wake Up</strong> — the instance will be available in ~5 minutes</li>
+<li>If the instance expired, click <strong>Request Instance</strong> to get a fresh one</li>
+<li>Note: a fresh instance loses any customizations (Business Rules, users) — re-run <code>New-SnowPdiSetup.ps1</code> to restore them</li>
+</ol>
+<hr />
+<h2 id="step-4-automated-setup-recommended">Step 4: Automated Setup (Recommended)<a class="headerlink" href="#step-4-automated-setup-recommended" title="Permanent link">&para;</a></h2>
+<p>Run <code>New-SnowPdiSetup.ps1</code> to create the integration service account and verify the API:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">.\</span><span class="n">deploy</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="nb">New-SnowPdiSetup</span><span class="p">.</span><span class="n">ps1</span> <span class="p">`</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  <span class="n">-SnowInstanceUrl</span> <span class="n">https</span><span class="p">://</span><span class="n">dev123456</span><span class="p">.</span><span class="n">service-now</span><span class="p">.</span><span class="n">com</span> <span class="p">`</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  <span class="n">-AdminUsername</span> <span class="n">admin</span>
+</code></pre></div>
+<p>The script will:
+- Create the <code>azure_monitor_svc</code> service account
+- Assign <code>itil</code> + <code>rest_service</code> roles
+- Create and close a test incident
+- Optionally create the Business Rule (if you provide <code>-CloseLogicAppWebhookUrl</code>)</p>
+<hr />
+<h2 id="step-5-manual-setup-alternative">Step 5: Manual Setup (Alternative)<a class="headerlink" href="#step-5-manual-setup-alternative" title="Permanent link">&para;</a></h2>
+<h3 id="create-the-integration-user">Create the Integration User<a class="headerlink" href="#create-the-integration-user" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Navigate to <strong>User Administration → Users</strong></li>
+<li>Click <strong>New</strong></li>
+<li>Fill in:</li>
+<li><strong>User ID</strong>: <code>azure_monitor_svc</code></li>
+<li><strong>First/Last name</strong>: <code>Azure Monitor Integration</code></li>
+<li><strong>Password</strong>: Choose a strong password (this goes in Key Vault)</li>
+<li><strong>Active</strong>: Checked</li>
+<li>Save the record</li>
+</ol>
+<h3 id="assign-roles">Assign Roles<a class="headerlink" href="#assign-roles" title="Permanent link">&para;</a></h3>
+<p>On the new user record:
+1. Scroll to the <strong>Roles</strong> related list
+2. Click <strong>Edit</strong>
+3. Add: <code>itil</code>, <code>rest_service</code>
+4. Click <strong>Save</strong></p>
+<hr />
+<h2 id="step-6-configure-the-business-rule-bi-directional-close">Step 6: Configure the Business Rule (Bi-Directional Close)<a class="headerlink" href="#step-6-configure-the-business-rule-bi-directional-close" title="Permanent link">&para;</a></h2>
+<p>The Business Rule fires the Close Logic App when an Azure Monitor-sourced incident is resolved.</p>
+<h3 id="get-the-close-logic-app-webhook-url">Get the Close Logic App Webhook URL<a class="headerlink" href="#get-the-close-logic-app-webhook-url" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c"># After deploying the Close Logic App</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p">(</span><span class="nb">Get-AzLogicAppTriggerCallbackUrl</span> <span class="n">-ResourceGroupName</span> <span class="n">rg-azure-monitor-itsm</span> <span class="p">`</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  <span class="n">-Name</span> <span class="s1">&#39;Azure-Monitor-Close-ITSM-HTTP-API&#39;</span> <span class="p">`</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  <span class="n">-TriggerName</span> <span class="s1">&#39;When_a_HTTP_request_is_received&#39;</span><span class="p">).</span><span class="n">Value</span>
+</code></pre></div>
+<h3 id="create-the-business-rule">Create the Business Rule<a class="headerlink" href="#create-the-business-rule" title="Permanent link">&para;</a></h3>
+<ol>
+<li>In SNOW, navigate to <strong>System Definition → Business Rules</strong></li>
+<li>Click <strong>New</strong></li>
+<li>Configure:</li>
+<li><strong>Name</strong>: <code>Azure Monitor Close Alert on Ticket Complete</code></li>
+<li><strong>Table</strong>: <code>Incident [incident]</code></li>
+<li><strong>Advanced</strong>: Checked</li>
+<li><strong>When</strong>: After</li>
+<li><strong>Insert</strong>: Unchecked, <strong>Update</strong>: Checked</li>
+<li>In the <strong>Filter Conditions</strong> tab, add:</li>
+<li><code>State | is | Resolved</code></li>
+<li>In the <strong>Advanced</strong> tab, paste the script from <code>src/servicenow/snow-automation-rule-script.js</code></li>
+<li>Replace <code>&lt;CLOSE-LOGIC-APP-WEBHOOK-URL&gt;</code> with the URL from the previous step</li>
+<li>Save</li>
+</ol>
+<hr />
+<h2 id="step-7-verify-in-the-snow-ui">Step 7: Verify in the SNOW UI<a class="headerlink" href="#step-7-verify-in-the-snow-ui" title="Permanent link">&para;</a></h2>
+<p>After running <code>Test-Integration.ps1</code>, confirm in the PDI:</p>
+<ol>
+<li>Navigate to <strong>Service Desk → Incidents</strong></li>
+<li>Search for the test incident — short description will contain "TestAlertRule-Integration"</li>
+<li>Open the record and verify:</li>
+<li><strong>Correlation ID</strong> field = the Azure Monitor <code>alertId</code> (starts with <code>/subscriptions/</code>)</li>
+<li><strong>Impact</strong>, <strong>Urgency</strong>, <strong>Priority</strong> match the Sev2 → Moderate mapping</li>
+<li><strong>State</strong> = Resolved (if the close was also tested)</li>
+</ol>
+<p>To see incoming REST API calls in the PDI:
+1. Go to <strong>System Log → All</strong> (search <code>syslog.list</code> in the nav filter)
+2. Filter <strong>Source = REST</strong> — all inbound Table API calls from the Logic App appear here</p>
+<hr />
+<h2 id="step-8-test-the-integration">Step 8: Test the Integration<a class="headerlink" href="#step-8-test-the-integration" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c"># Run the end-to-end test</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p">.\</span><span class="n">deploy</span><span class="p">\</span><span class="n">scripts</span><span class="p">\</span><span class="nb">Test-Integration</span><span class="p">.</span><span class="n">ps1</span> <span class="n">-ResourceGroupName</span> <span class="n">rg-azure-monitor-itsm</span>
+</code></pre></div>
+<p>This will:
+1. POST a sample metric alert to the Alert Logic App
+2. Poll SNOW for the created incident (correlation_id matching the test alertId)
+3. Report the SNOW incident number on success</p>
+<hr />
+<h2 id="snow-table-api-reference">SNOW Table API Reference<a class="headerlink" href="#snow-table-api-reference" title="Permanent link">&para;</a></h2>
+<p>Base URL: <code>https://{instance}.service-now.com/api/now/table/{tableName}</code></p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create incident</td>
+<td>POST</td>
+<td><code>/api/now/table/incident</code></td>
+<td>Returns <code>sys_id</code></td>
+</tr>
+<tr>
+<td>Update incident</td>
+<td>PATCH</td>
+<td><code>/api/now/table/incident/{sys_id}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Query by correlation_id</td>
+<td>GET</td>
+<td><code>/api/now/table/incident?sysparm_query=correlation_id=...</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Lookup CI</td>
+<td>GET</td>
+<td><code>/api/now/table/cmdb_ci_computer?sysparm_query=name=...</code></td>
+<td>Used for CI field</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="correlation-id-pattern">Correlation ID Pattern<a class="headerlink" href="#correlation-id-pattern" title="Permanent link">&para;</a></h2>
+<p>The Azure Monitor <code>alertId</code> is stored in SNOW's <code>correlation_id</code> field:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>/subscriptions/{subscriptionId}/providers/Microsoft.AlertsManagement/alerts/{alertGuid}
+</code></pre></div>
+<p>The Close Logic App uses <code>correlation_id</code> to find and close the right Azure Monitor alert.<br />
+The Business Rule identifies Azure Monitor-sourced tickets by checking if <code>correlation_id</code> starts with <code>/subscriptions/</code>.</p>
+<hr />
+<h2 id="rest-api-explorer-pdi-built-in">REST API Explorer (PDI Built-In)<a class="headerlink" href="#rest-api-explorer-pdi-built-in" title="Permanent link">&para;</a></h2>
+<p>The PDI includes a built-in REST API Explorer — useful for manually testing API calls before the Logic App is wired up:</p>
+<ol>
+<li>In your PDI, navigate to <strong>System Web Services → REST API Explorer</strong></li>
+<li>Select <strong>Table API → POST /now/table/{tableName}</strong></li>
+<li>Set <code>tableName = incident</code></li>
+<li>Paste a sample body from <code>samples/snow-responses/incident-created.json</code></li>
+<li>Click <strong>Send</strong> — you'll see the full request/response with headers</li>
+</ol>
+<p>This lets you verify your service account has the correct permissions before deploying the Logic Apps.</p>
+<hr />
+<h2 id="local-mock-no-snow-account-required">Local Mock (No SNOW Account Required)<a class="headerlink" href="#local-mock-no-snow-account-required" title="Permanent link">&para;</a></h2>
+<p>If you don't have a PDI yet (or want fully offline development), use the included Docker mock:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>dev/docker
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>docker-compose<span class="w"> </span>up
+</code></pre></div>
+<p>This starts <a href="https://github.com/typicode/json-server">json-server</a> on <code>http://localhost:3000</code> with routes that mirror the ServiceNow Table API:</p>
+<table>
+<thead>
+<tr>
+<th>SNOW Table API</th>
+<th>Mock equivalent</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST /api/now/table/incident</code></td>
+<td><code>POST http://localhost:3000/api/now/table/incident</code></td>
+</tr>
+<tr>
+<td><code>GET /api/now/table/incident?sysparm_query=...</code></td>
+<td><code>GET http://localhost:3000/api/now/table/incident</code></td>
+</tr>
+<tr>
+<td><code>PATCH /api/now/table/incident/{id}</code></td>
+<td><code>PATCH http://localhost:3000/api/now/table/incident/{id}</code></td>
+</tr>
+</tbody>
+</table>
+<p>Pre-seeded data is in <code>dev/docker/mock-snow-db.json</code> — add/edit records there.</p>
+<p><strong>To test with the mock instead of SNOW:</strong>
+1. Set <code>ItsmApiIntegrationCode</code> in Key Vault to your machine's public IP + port 3000
+2. Set <code>ItsmApiUserName</code> / <code>ItsmApiSecret</code> to any values (json-server doesn't check auth)
+3. Run the Logic App — it will POST to the mock endpoint
+4. Verify the incident was recorded: <code>curl http://localhost:3000/incident</code></p>
+<blockquote>
+<p><strong>Note:</strong> The mock is for local Logic App payload development only. It does not send webhooks back to the Close Logic App (no Business Rule equivalent). Use a real PDI for full bi-directional testing.</p>
+</blockquote>
+<hr />
+<h2 id="dev-container">Dev Container<a class="headerlink" href="#dev-container" title="Permanent link">&para;</a></h2>
+<p>Open this repo in VS Code and click <strong>Reopen in Container</strong> — the Dev Container in <code>dev/.devcontainer/</code> includes:</p>
+<ul>
+<li>Azure CLI + Bicep extension</li>
+<li>Terraform ≥ 1.5</li>
+<li>PowerShell 7 + Az module (auto-installed on container create)</li>
+<li>GitHub CLI</li>
+<li>VS Code extensions: Bicep, Terraform, PowerShell, Logic Apps, REST Client</li>
+</ul>
+<p>Port 3000 is automatically forwarded from the container so <code>docker-compose up</code> in <code>dev/docker/</code> works without any extra configuration.</p>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Was this page helpful?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page was helpful" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 9v12H1V9zm4 12a2 2 0 0 1-2-2V9c0-.55.22-1.05.59-1.41L14.17 1l1.06 1.06c.27.27.44.64.44 1.05l-.03.32L14.69 8H21a2 2 0 0 1 2 2v2c0 .26-.05.5-.14.73l-3.02 7.05C19.54 20.5 18.83 21 18 21zm0-2h9.03L21 12v-2h-8.79l1.13-5.32L9 9.03z"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="This page could be improved" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 15V3h4v12zM15 3a2 2 0 0 1 2 2v10c0 .55-.22 1.05-.59 1.41L9.83 23l-1.06-1.06c-.27-.27-.44-.64-.44-1.06l.03-.31.95-4.57H3a2 2 0 0 1-2-2v-2c0-.26.05-.5.14-.73l3.02-7.05C4.46 3.5 5.17 3 6 3zm0 2H5.97L3 12v2h8.78l-1.13 5.32L15 14.97z"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Thanks for your feedback!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Thanks for letting us know!
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Based on <a href="https://blog.johnjoyner.net">John Joyner's</a> Logic App ITSM guide
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/thisismydemo/azure-monitor-itsm" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "search.share", "content.code.copy", "content.code.annotate", "content.tabs.link"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
