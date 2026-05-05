@@ -1,0 +1,28 @@
+version: '3.8'
+
+# Local dev environment — mock ServiceNow REST API using json-server.
+# Lets you test Logic App payloads without a live SNOW instance.
+#
+# Usage:
+#   docker-compose up
+#   curl http://localhost:3000/incident
+#
+# The db.json file seeds the mock database. Add/edit records there.
+
+services:
+  mock-snow:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./mock-snow-db.json:/app/db.json:ro
+    command: >
+      sh -c "npm install -g json-server &&
+             json-server --watch db.json --port 3000 --host 0.0.0.0
+               --routes routes.json"
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/incident"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

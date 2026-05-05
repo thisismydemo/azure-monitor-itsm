@@ -1,0 +1,20 @@
+{
+  "result": {
+    "sys_id": "abc123def456ghi789",
+    "number": "INC0012345",
+    "state": "1",
+    "state_display": "New",
+    "short_description": "Computer Late Heartbeat Alert - Fired",
+    "description": "Alert Rule: Computer Late Heartbeat Alert\nSeverity: Sev2\nCondition: Fired\nFired: 2025-05-05T12:00:00.000Z\nResource: /subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/rg-servers/providers/microsoft.compute/virtualmachines/vm-web01\nDescription: The virtual machine vm-web01 has not sent a heartbeat in the last 5 minutes.\nAlert ID: /subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.AlertsManagement/alerts/11111111-1111-1111-1111-111111111111",
+    "impact": "2",
+    "urgency": "2",
+    "priority": "3",
+    "category": "software",
+    "subcategory": "application",
+    "correlation_id": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.AlertsManagement/alerts/11111111-1111-1111-1111-111111111111",
+    "cmdb_ci": "vm-web01",
+    "opened_at": "2025-05-05T12:00:15Z",
+    "opened_by": "azure_monitor_svc",
+    "comments": "Opened automatically by Azure Monitor via Logic App integration. Source: azure-monitor-itsm"
+  }
+}

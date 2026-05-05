@@ -1,0 +1,48 @@
+{
+  "schemaId": "azureMonitorCommonAlertSchema",
+  "data": {
+    "essentials": {
+      "alertId": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.AlertsManagement/alerts/11111111-1111-1111-1111-111111111111",
+      "alertRule": "Computer Late Heartbeat Alert",
+      "severity": "Sev2",
+      "signalType": "Metric",
+      "monitorCondition": "Fired",
+      "monitoringService": "Platform",
+      "alertTargetIDs": [
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourcegroups/rg-servers/providers/microsoft.compute/virtualmachines/vm-web01"
+      ],
+      "configurationItems": [
+        "vm-web01"
+      ],
+      "originAlertId": "11111111-1111-1111-1111-111111111111",
+      "firedDateTime": "2025-05-05T12:00:00.000Z",
+      "description": "The virtual machine vm-web01 has not sent a heartbeat in the last 5 minutes.",
+      "essentialsVersion": "1.0",
+      "alertContextVersion": "1.0"
+    },
+    "alertContext": {
+      "properties": null,
+      "conditionType": "SingleResourceMultipleMetricCriteria",
+      "condition": {
+        "windowSize": "PT5M",
+        "allOf": [
+          {
+            "metricName": "Heartbeat",
+            "metricNamespace": "Microsoft.OperationalInsights/workspaces",
+            "operator": "LessThan",
+            "threshold": "1",
+            "timeAggregation": "Count",
+            "dimensions": [
+              {
+                "name": "Computer",
+                "value": "vm-web01"
+              }
+            ],
+            "metricValue": 0.0,
+            "webTestName": null
+          }
+        ]
+      }
+    }
+  }
+}

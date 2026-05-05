@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "description": "Maps Azure Monitor alert severity and metadata to ServiceNow Table API fields.",
+  "severityMapping": {
+    "Sev0": {
+      "azureLabel": "Critical",
+      "impact": "1",
+      "impactLabel": "1 - High",
+      "urgency": "1",
+      "urgencyLabel": "1 - High",
+      "priority": "1",
+      "priorityLabel": "1 - Critical"
+    },
+    "Sev1": {
+      "azureLabel": "Error",
+      "impact": "1",
+      "impactLabel": "1 - High",
+      "urgency": "2",
+      "urgencyLabel": "2 - Medium",
+      "priority": "2",
+      "priorityLabel": "2 - High"
+    },
+    "Sev2": {
+      "azureLabel": "Warning",
+      "impact": "2",
+      "impactLabel": "2 - Medium",
+      "urgency": "2",
+      "urgencyLabel": "2 - Medium",
+      "priority": "3",
+      "priorityLabel": "3 - Moderate"
+    },
+    "Sev3": {
+      "azureLabel": "Informational",
+      "impact": "3",
+      "impactLabel": "3 - Low",
+      "urgency": "3",
+      "urgencyLabel": "3 - Low",
+      "priority": "4",
+      "priorityLabel": "4 - Low"
+    },
+    "Sev4": {
+      "azureLabel": "Verbose",
+      "impact": "3",
+      "impactLabel": "3 - Low",
+      "urgency": "3",
+      "urgencyLabel": "3 - Low",
+      "priority": "5",
+      "priorityLabel": "5 - Planning"
+    }
+  },
+  "incidentFieldMapping": {
+    "short_description": "@{triggerBody()?['data']?['essentials']?['alertRule']} - @{triggerBody()?['data']?['essentials']?['monitorCondition']}",
+    "description": "Alert Rule: @{triggerBody()?['data']?['essentials']?['alertRule']}\nSeverity: @{triggerBody()?['data']?['essentials']?['severity']}\nCondition: @{triggerBody()?['data']?['essentials']?['monitorCondition']}\nFired: @{triggerBody()?['data']?['essentials']?['firedDateTime']}\nResource: @{triggerBody()?['data']?['essentials']?['alertTargetIDs'][0]}\nDescription: @{triggerBody()?['data']?['essentials']?['description']}\nAlert ID: @{triggerBody()?['data']?['essentials']?['alertId']}",
+    "correlation_id": "@{triggerBody()?['data']?['essentials']?['alertId']}",
+    "category": "software",
+    "subcategory": "application",
+    "comments": "Opened automatically by Azure Monitor via Logic App integration. Source: azure-monitor-itsm"
+  },
+  "resolutionFieldMapping": {
+    "state": "6",
+    "close_code": "Solved (Permanently)",
+    "close_notes": "Azure Monitor alert auto-resolved. Resolved at: @{triggerBody()?['data']?['essentials']?['resolvedDateTime']}"
+  },
+  "supportedTargetTables": [
+    {
+      "table": "incident",
+      "description": "ITSM Incident — default, recommended for most alert scenarios"
+    },
+    {
+      "table": "em_event",
+      "description": "Event Management Event — use when Azure Monitor feeds an event console"
+    },
+    {
+      "table": "change_request",
+      "description": "Change Request — use for planned maintenance or change-driven alerts"
+    },
+    {
+      "table": "problem",
+      "description": "Problem Record — use for recurring or root-cause tracking scenarios"
+    }
+  ]
+}
