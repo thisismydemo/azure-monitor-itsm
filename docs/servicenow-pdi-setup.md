@@ -1,29 +1,67 @@
 # ServiceNow PDI Developer Environment Setup
 
-This guide walks through getting a free ServiceNow Personal Developer Instance (PDI) and configuring it for the Azure Monitor integration.
+This guide walks through getting a free ServiceNow Personal Developer Instance (PDI) and configuring it for the Azure Monitor integration. If you don't want to use a live SNOW instance at all, skip to [Local Mock (No SNOW account required)](#local-mock-no-snow-account-required).
 
 ## What is a PDI?
 
 A ServiceNow PDI is a free, full-featured ServiceNow instance available to any developer who registers at [developer.servicenow.com](https://developer.servicenow.com). It includes ITSM, ITOM, Table API, Integration Hub, Flow Designer — everything needed to test this integration.
 
-**Important notes:**
-- The instance hibernates after ~10 days of inactivity — you'll get email warnings
-- Outbound email is disabled (not relevant for this integration)
-- Log back in or request a new instance to keep it alive
+**PDI facts:**
+- Completely free — no credit card, no trial expiry
+- Same platform as enterprise ServiceNow — full Table API, Business Rules, CMDB
+- Hibernates after ~10 days of inactivity (you get email warnings before it sleeps)
+- Wakes back up in ~5 minutes when you log in; or request a new one if it expired
+- Outbound email is disabled by ServiceNow (not relevant for this integration)
+- Do NOT use ServiceNow Learning Lab instances — those are temporary and get wiped
 
 ---
 
 ## Step 1: Get a PDI
 
 1. Go to [developer.servicenow.com](https://developer.servicenow.com)
-2. Sign in or create a free developer account
-3. Click **Request Instance** in the top navigation
-4. Select your preferred ServiceNow release (Washington DC or later recommended)
-5. Note your instance URL (e.g., `https://dev123456.service-now.com`) and admin credentials
+2. Click **Sign In** → **Create Account** (free)
+3. After login, click **Start Building** or go to **My Instance** in the header
+4. Click **Request Instance**
+5. Select your ServiceNow release — **Washington DC (or later)** recommended for this integration
+6. Wait 2–5 minutes for provisioning
+7. Copy your instance URL (e.g., `https://dev123456.service-now.com`) and note your admin credentials
 
 ---
 
-## Step 2: Automated Setup (Recommended)
+## Step 2: First Login and Orientation
+
+1. Open your instance URL in a browser and log in as `admin`
+2. On first login you may see a **Setup Wizard** — you can dismiss it
+3. Key navigation for this integration:
+
+| Where to go | How to get there |
+|---|---|
+| Incidents list | **Service Desk → Incidents** (or search `incident.list` in the nav filter) |
+| Users | **User Administration → Users** |
+| Business Rules | **System Definition → Business Rules** |
+| REST API Explorer | **System Web Services → REST API Explorer** |
+| Application Registry | **System OAuth → Application Registry** |
+
+4. Verify the Table API works from your browser:
+   ```
+   https://dev123456.service-now.com/api/now/table/incident?sysparm_limit=5
+   ```
+   You should see a JSON response with sample incidents (browser will prompt for credentials).
+
+---
+
+## Step 3: Wake a Hibernated Instance
+
+If your PDI hibernated:
+
+1. Go to [developer.servicenow.com](https://developer.servicenow.com) → **My Instance**
+2. Click **Wake Up** — the instance will be available in ~5 minutes
+3. If the instance expired, click **Request Instance** to get a fresh one
+   - Note: a fresh instance loses any customizations (Business Rules, users) — re-run `New-SnowPdiSetup.ps1` to restore them
+
+---
+
+## Step 4: Automated Setup (Recommended)
 
 Run `New-SnowPdiSetup.ps1` to create the integration service account and verify the API:
 
@@ -41,7 +79,7 @@ The script will:
 
 ---
 
-## Step 3: Manual Setup (Alternative)
+## Step 5: Manual Setup (Alternative)
 
 ### Create the Integration User
 
@@ -64,7 +102,7 @@ On the new user record:
 
 ---
 
-## Step 4: Configure the Business Rule (Bi-Directional Close)
+## Step 6: Configure the Business Rule (Bi-Directional Close)
 
 The Business Rule fires the Close Logic App when an Azure Monitor-sourced incident is resolved.
 
@@ -95,7 +133,24 @@ The Business Rule fires the Close Logic App when an Azure Monitor-sourced incide
 
 ---
 
-## Step 5: Test the Integration
+## Step 7: Verify in the SNOW UI
+
+After running `Test-Integration.ps1`, confirm in the PDI:
+
+1. Navigate to **Service Desk → Incidents**
+2. Search for the test incident — short description will contain "TestAlertRule-Integration"
+3. Open the record and verify:
+   - **Correlation ID** field = the Azure Monitor `alertId` (starts with `/subscriptions/`)
+   - **Impact**, **Urgency**, **Priority** match the Sev2 → Moderate mapping
+   - **State** = Resolved (if the close was also tested)
+
+To see incoming REST API calls in the PDI:
+1. Go to **System Log → All** (search `syslog.list` in the nav filter)
+2. Filter **Source = REST** — all inbound Table API calls from the Logic App appear here
+
+---
+
+## Step 8: Test the Integration
 
 ```powershell
 # Run the end-to-end test
@@ -132,3 +187,60 @@ The Azure Monitor `alertId` is stored in SNOW's `correlation_id` field:
 
 The Close Logic App uses `correlation_id` to find and close the right Azure Monitor alert.  
 The Business Rule identifies Azure Monitor-sourced tickets by checking if `correlation_id` starts with `/subscriptions/`.
+
+---
+
+## REST API Explorer (PDI Built-In)
+
+The PDI includes a built-in REST API Explorer — useful for manually testing API calls before the Logic App is wired up:
+
+1. In your PDI, navigate to **System Web Services → REST API Explorer**
+2. Select **Table API → POST /now/table/{tableName}**
+3. Set `tableName = incident`
+4. Paste a sample body from `samples/snow-responses/incident-created.json`
+5. Click **Send** — you'll see the full request/response with headers
+
+This lets you verify your service account has the correct permissions before deploying the Logic Apps.
+
+---
+
+## Local Mock (No SNOW Account Required)
+
+If you don't have a PDI yet (or want fully offline development), use the included Docker mock:
+
+```bash
+cd dev/docker
+docker-compose up
+```
+
+This starts [json-server](https://github.com/typicode/json-server) on `http://localhost:3000` with routes that mirror the ServiceNow Table API:
+
+| SNOW Table API | Mock equivalent |
+|---|---|
+| `POST /api/now/table/incident` | `POST http://localhost:3000/api/now/table/incident` |
+| `GET /api/now/table/incident?sysparm_query=...` | `GET http://localhost:3000/api/now/table/incident` |
+| `PATCH /api/now/table/incident/{id}` | `PATCH http://localhost:3000/api/now/table/incident/{id}` |
+
+Pre-seeded data is in `dev/docker/mock-snow-db.json` — add/edit records there.
+
+**To test with the mock instead of SNOW:**
+1. Set `ItsmApiIntegrationCode` in Key Vault to your machine's public IP + port 3000
+2. Set `ItsmApiUserName` / `ItsmApiSecret` to any values (json-server doesn't check auth)
+3. Run the Logic App — it will POST to the mock endpoint
+4. Verify the incident was recorded: `curl http://localhost:3000/incident`
+
+> **Note:** The mock is for local Logic App payload development only. It does not send webhooks back to the Close Logic App (no Business Rule equivalent). Use a real PDI for full bi-directional testing.
+
+---
+
+## Dev Container
+
+Open this repo in VS Code and click **Reopen in Container** — the Dev Container in `dev/.devcontainer/` includes:
+
+- Azure CLI + Bicep extension
+- Terraform ≥ 1.5
+- PowerShell 7 + Az module (auto-installed on container create)
+- GitHub CLI
+- VS Code extensions: Bicep, Terraform, PowerShell, Logic Apps, REST Client
+
+Port 3000 is automatically forwarded from the container so `docker-compose up` in `dev/docker/` works without any extra configuration.
