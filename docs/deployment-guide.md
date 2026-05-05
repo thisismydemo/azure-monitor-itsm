@@ -108,6 +108,54 @@ After deploying, customize the Logic App to match your SNOW environment (John's 
 
 ---
 
+### Steps 8–9: Customize Logic App for Your ServiceNow Environment
+
+**John's guide steps 8–9.** The Logic App deploys with placeholder values for SNOW-specific fields. Update these before enabling.
+
+1. In the Azure portal, open `Azure-Monitor-Alert-ITSM-HTTP-API`
+2. Click **Edit** to open the Logic App Designer
+3. Find the HTTP action named **Create_SNOW_Incident** (or similar)
+4. Update the JSON body with your SNOW environment values:
+
+   | Field | Description | Example |
+   |---|---|---|
+   | `company` | Your SNOW company sys_id | Get from SNOW: `GET /api/now/table/core_company` |
+   | `assignment_group` | SNOW group sys_id for ticket routing | Get from SNOW: `GET /api/now/table/sys_user_group?sysparm_query=name=Service Desk` |
+   | `category` / `subcategory` | Ticket category | `software`, `hardware`, `network` |
+   | `caller_id` | Default caller sys_id | Usually the integration service account sys_id |
+
+5. For the **target table**, John's Logic App defaults to `incident`. If you need a different table:
+   - `incident` — IT incidents (default, recommended)
+   - `em_event` — Event Management events (requires ITOM)
+   - `change_request` — Change requests
+   - `problem` — Problem records
+   
+   Update the HTTP action URL from `.../table/incident` to `.../table/{your-table}` and adjust the field names to match that table's schema.
+
+6. Save the Logic App
+
+> **Tip**: Use the SNOW REST API Explorer (`/api/now/table/sys_user_group`) or `New-SnowPdiSetup.ps1` output to find sys_id values for your PDI.
+
+---
+
+### Steps 11–12: Trigger Test Alert and Validate
+
+**John's guide steps 11–12.** Validate the integration fires correctly before full rollout.
+
+```powershell
+# Automated end-to-end test
+.\deploy\scripts\Test-Integration.ps1 -ResourceGroupName rg-azure-monitor-itsm
+```
+
+For manual validation, trigger a real Azure Monitor alert by temporarily lowering a threshold on an existing metric alert rule, then confirm:
+- SNOW incident is created with the correct severity mapping
+- `correlation_id` on the SNOW record matches the Azure Monitor `alertId`
+- Alert state in Azure Monitor changes to `Acknowledged`
+- Resolving the alert in Azure Monitor closes the SNOW incident (Resolved state)
+- Closing the SNOW incident fires the Business Rule → Close Logic App → Azure Monitor alert closed
+
+---
+
 ### Step 10: Create Action Group
 
 **John's guide step 10.**
@@ -138,13 +186,27 @@ Or automate via `New-SnowPdiSetup.ps1 -CloseLogicAppWebhookUrl <url>`.
 
 ---
 
-### Step 14: Enable Logic Apps
+### Step 14: Enable Logic Apps + Secure Inputs/Outputs
 
-**John's guide step 14.**
+**John's guide step 14.** Enable both Logic Apps and protect Key Vault secrets from appearing in run history.
 
 ```powershell
 .\deploy\scripts\Enable-LogicApps.ps1 -ResourceGroupName rg-azure-monitor-itsm
 ```
+
+**Secure inputs/outputs** (prevents SNOW credentials from appearing in Logic App run history):
+
+1. In the Azure portal, open `Azure-Monitor-Alert-ITSM-HTTP-API` → **Edit**
+2. For each action that reads a Key Vault secret, click the `...` menu → **Settings**
+3. Toggle **Secure Inputs** and **Secure Outputs** to **On**
+4. Repeat for `Azure-Monitor-Close-ITSM-HTTP-API`
+5. Save both Logic Apps
+
+**Logic App Access Control** (restricts inbound calls to Azure Monitor IPs only):
+
+1. In the Azure portal, open each Logic App → **Settings → Workflow settings**
+2. Under **Access control configuration → Trigger**, add the Azure Monitor service tag: `AzureMonitor`
+3. This prevents anyone other than Azure Monitor from calling the Logic App trigger URL
 
 ---
 
