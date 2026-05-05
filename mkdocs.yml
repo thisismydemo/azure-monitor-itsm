@@ -1,6 +1,6 @@
 site_name: Azure Monitor → ServiceNow Integration
 site_description: Fully automated, repeatable solution connecting Azure Monitor alerts to ServiceNow using Logic Apps — based on John Joyner's (Microsoft MVP) guide.
-site_url: https://thisismydemo.github.io/azure-monitor-itsm/
+site_url: https://thisismydemo.cloud/azure-monitor-itsm/
 repo_url: https://github.com/thisismydemo/azure-monitor-itsm
 repo_name: thisismydemo/azure-monitor-itsm
 edit_uri: edit/main/docs/
