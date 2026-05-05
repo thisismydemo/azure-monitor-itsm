@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - kristopherjturner/azure-monitor-snow-automation
     paths:
       - "docs/**"
       - "mkdocs.yml"
