@@ -1,0 +1,28 @@
+{
+  "incident": [
+    {
+      "id": 1,
+      "sys_id": "abc123def456abc123def456abc123de",
+      "number": "INC0010001",
+      "short_description": "Sample SNOW incident — seeded by mock-snow-db.json",
+      "description": "This is a mock ServiceNow incident for local dev testing.",
+      "state": "1",
+      "impact": "2",
+      "urgency": "2",
+      "priority": "3",
+      "category": "software",
+      "correlation_id": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.AlertsManagement/alerts/sample"
+    }
+  ],
+  "sys_user": [],
+  "sys_user_has_role": [],
+  "cmdb_ci_computer": [
+    {
+      "id": 1,
+      "sys_id": "ci123456789012345678901234567890",
+      "name": "TestServer01",
+      "ip_address": "10.0.0.10",
+      "os": "Windows Server 2022"
+    }
+  ]
+}

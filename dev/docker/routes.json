@@ -1,0 +1,4 @@
+{
+  "/api/now/table/:resource": "/:resource",
+  "/api/now/table/:resource/:id": "/:resource/:id"
+}

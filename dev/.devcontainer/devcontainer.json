@@ -1,0 +1,46 @@
+{
+  "name": "Azure Monitor → ServiceNow ITSM Dev",
+  "build": {
+    "context": ".",
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest",
+      "extensions": ["bicep"]
+    },
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/powershell:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-bicep",
+        "hashicorp.terraform",
+        "ms-vscode.powershell",
+        "ms-azuretools.vscode-logicapps",
+        "ms-vscode.azure-account",
+        "humao.rest-client"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "pwsh",
+        "editor.formatOnSave": true,
+        "bicep.enableSurveys": false
+      }
+    }
+  },
+  "postCreateCommand": "pwsh -Command 'Install-Module Az -Scope CurrentUser -Force -AllowClobber'",
+  "remoteUser": "vscode",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Mock ServiceNow (json-server)",
+      "onAutoForward": "notify"
+    }
+  }
+}
