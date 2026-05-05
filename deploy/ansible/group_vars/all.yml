@@ -1,0 +1,45 @@
+---
+# ---------------------------------------------------------------------------
+# Azure Monitor → ServiceNow Integration — Ansible Variables
+# ---------------------------------------------------------------------------
+# Required — set these before running:
+#   ansible-playbook site.yml -e "snow_instance_url=https://dev123456.service-now.com snow_username=azure_monitor_svc"
+#   SNOW password is read from ANSIBLE_SNOW_PASSWORD env var (never inline).
+#
+# Sensitive values (snow_password, snow_instance_url, snow_username) should be
+# passed via extra-vars or ansible-vault, NOT stored in this file.
+
+# --- Azure ---
+resource_group_name: rg-azure-monitor-itsm
+location: eastus
+subscription_id: "{{ lookup('env','AZURE_SUBSCRIPTION_ID') }}"
+
+# --- Managed Identity ---
+managed_identity_name: ITSM-MI
+
+# --- Key Vault ---
+key_vault_name: itsm-kv
+
+# --- Logic Apps ---
+alert_logic_app_name: Azure-Monitor-Alert-ITSM-HTTP-API
+close_logic_app_name: Azure-Monitor-Close-ITSM-HTTP-API
+kv_connection_name: itsm-keyvault-connection-mi
+
+# ARM template URLs (John Joyner's templates — do not rename)
+alert_arm_template_url: >-
+  https://raw.githubusercontent.com/john-joyner/Microsoft.Logic/main/Azure-Monitor-Alert-ITSM-HTTP-API.json
+close_arm_template_url: >-
+  https://raw.githubusercontent.com/john-joyner/Microsoft.Logic/main/Azure-Monitor-Close-ITSM-HTTP-API.json
+
+# --- Action Group ---
+action_group_name: ag-azure-monitor-itsm
+action_group_short_name: ITSMAlert
+
+# --- ServiceNow (pass via extra-vars or ansible-vault) ---
+snow_instance_url: "{{ lookup('env','SNOW_INSTANCE_URL') | default('') }}"
+snow_username: "{{ lookup('env','SNOW_USERNAME') | default('') }}"
+snow_password: "{{ lookup('env','ANSIBLE_SNOW_PASSWORD') | default('') }}"
+
+# --- ITSM Logic App parameters ---
+itsm_company_id: ""       # SNOW company sys_id — update before enabling
+itsm_queue_id: ""         # SNOW assignment_group sys_id — update before enabling

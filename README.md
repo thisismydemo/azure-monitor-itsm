@@ -1,7 +1,9 @@
 # Azure Monitor → ServiceNow (ITSM) Integration
 
 > **A fully automated, repeatable solution connecting Azure Monitor alerts to ServiceNow.**  
-> Based on [John Joyner's (Microsoft MVP) detailed guide](https://blog.johnjoyner.net/integrate-azure-monitor-alerts-from-servers-with-your-itsm-system/) — replaces the deprecated Azure Monitor ITSM Connector marketplace item.
+> Based on [John Joyner's (Microsoft MVP) detailed guide](https://blog.johnjoyner.net/integrate-azure-monitor-alerts-from-servers-with-your-itsm-system/).
+
+> ⚠️ **The Azure Monitor ITSM Connector (ITSMC) has been retired by Microsoft.** This solution replaces it using Logic Apps with Managed Identity — no marketplace item, no client secrets. See [Why Not the ITSM Connector?](./docs/why-not-itsm-connector.md)
 
 ---
 

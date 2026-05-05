@@ -1,0 +1,55 @@
+---
+# ---------------------------------------------------------------------------
+# Task 04 — Key Vault Firewall
+# Retrieves Logic App outbound IPs and restricts Key Vault to those IPs only.
+# Maps to: John Joyner's step 7
+# WARNING: This will block your local machine from Key Vault unless you add
+#          your IP to kv_allowed_ips below.
+# ---------------------------------------------------------------------------
+
+# Add your machine's IP here if you need to retain access after lockdown.
+# Leave empty to restrict to Logic App IPs only.
+kv_extra_allowed_ips: []
+  # - "203.0.113.10/32"   # example: your office public IP
+
+- name: Get Alert Logic App outbound IPs
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows
+    resource_name: "{{ alert_logic_app_name }}"
+    api_version: "2019-05-01"
+  register: alert_la_info
+
+- name: Get Close Logic App outbound IPs
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows
+    resource_name: "{{ close_logic_app_name }}"
+    api_version: "2019-05-01"
+  register: close_la_info
+
+- name: Build combined IP list for Key Vault firewall
+  set_fact:
+    kv_allowed_ips: >-
+      {{
+        (alert_la_info.response[0].properties.endpointsConfiguration.connector.outgoingIpAddresses
+         | map(attribute='address') | map('regex_replace', '$', '/32') | list)
+        +
+        (close_la_info.response[0].properties.endpointsConfiguration.connector.outgoingIpAddresses
+         | map(attribute='address') | map('regex_replace', '$', '/32') | list)
+        + kv_extra_allowed_ips
+        | unique
+      }}
+
+- name: Apply Key Vault firewall rules
+  azure_rm_keyvault:
+    resource_group: "{{ resource_group_name }}"
+    vault_name: "{{ key_vault_name }}"
+    vault_tenant: "{{ lookup('env','AZURE_TENANT_ID') }}"
+    enable_rbac_authorization: true
+    network_acls:
+      default_action: Deny
+      bypass: AzureServices
+      ip_rules: "{{ kv_allowed_ips | map('community.general.dict_kv', 'value') | list }}"

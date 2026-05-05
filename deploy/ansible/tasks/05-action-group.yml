@@ -1,0 +1,32 @@
+---
+# ---------------------------------------------------------------------------
+# Task 05 — Action Group
+# Creates the Azure Monitor Action Group that triggers the Alert Logic App.
+# Maps to: John Joyner's step 10
+# ---------------------------------------------------------------------------
+
+- name: Get Alert Logic App trigger callback URL
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows/triggers/listCallbackUrl
+    resource_name: "{{ alert_logic_app_name }}/triggers/When_a_HTTP_request_is_received"
+    api_version: "2019-05-01"
+  register: alert_trigger_info
+
+- name: Set alert webhook URL fact
+  set_fact:
+    alert_webhook_url: "{{ alert_trigger_info.response[0].value }}"
+
+- name: Create Azure Monitor Action Group
+  azure_rm_monitoractiongroup:
+    resource_group: "{{ resource_group_name }}"
+    name: "{{ action_group_name }}"
+    group_short_name: "{{ action_group_short_name }}"
+    enabled: true
+    logic_app_receivers:
+      - name: AlertToSNOW
+        resource_id: >-
+          /subscriptions/{{ subscription_id }}/resourceGroups/{{ resource_group_name }}/providers/Microsoft.Logic/workflows/{{ alert_logic_app_name }}
+        callback_url: "{{ alert_webhook_url }}"
+        use_common_alert_schema: true

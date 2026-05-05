@@ -1,0 +1,77 @@
+---
+# ---------------------------------------------------------------------------
+# Task 03 — Deploy Logic Apps via ARM templates
+# Deploys John Joyner's Logic App ARM templates as ARM deployments.
+# Both Logic Apps deploy in DISABLED state — enable via task 06 after configuration.
+# Maps to: John Joyner's steps 6–9
+# ---------------------------------------------------------------------------
+
+- name: Fetch Alert Logic App ARM template
+  uri:
+    url: "{{ alert_arm_template_url }}"
+    return_content: true
+  register: alert_arm_template
+
+- name: Fetch Close Logic App ARM template
+  uri:
+    url: "{{ close_arm_template_url }}"
+    return_content: true
+  register: close_arm_template
+
+- name: Deploy Alert Logic App (Azure-Monitor-Alert-ITSM-HTTP-API)
+  azure_rm_deployment:
+    resource_group: "{{ resource_group_name }}"
+    name: deploy-alert-logic-app
+    template: "{{ alert_arm_template.content | from_json }}"
+    parameters:
+      location:
+        value: "{{ location }}"
+      managedIdentityName:
+        value: "{{ managed_identity_name }}"
+      keyVaultName:
+        value: "{{ key_vault_name }}"
+      itsmCompanyId:
+        value: "{{ itsm_company_id }}"
+      itsmQueueId:
+        value: "{{ itsm_queue_id }}"
+
+- name: Deploy Close Logic App (Azure-Monitor-Close-ITSM-HTTP-API)
+  azure_rm_deployment:
+    resource_group: "{{ resource_group_name }}"
+    name: deploy-close-logic-app
+    template: "{{ close_arm_template.content | from_json }}"
+    parameters:
+      location:
+        value: "{{ location }}"
+      managedIdentityName:
+        value: "{{ managed_identity_name }}"
+      keyVaultName:
+        value: "{{ key_vault_name }}"
+
+- name: Get Alert Logic App trigger callback URL
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows/triggers/listCallbackUrl
+    resource_name: "{{ alert_logic_app_name }}/triggers/When_a_HTTP_request_is_received"
+    api_version: "2019-05-01"
+  register: alert_trigger_url
+  ignore_errors: true
+
+- name: Display Alert Logic App webhook URL (for Action Group)
+  debug:
+    msg: "Alert Logic App webhook: {{ alert_trigger_url.response[0].value | default('Deploy complete — retrieve URL from Azure Portal') }}"
+
+- name: Get Close Logic App trigger callback URL
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows/triggers/listCallbackUrl
+    resource_name: "{{ close_logic_app_name }}/triggers/When_a_HTTP_request_is_received"
+    api_version: "2019-05-01"
+  register: close_trigger_url
+  ignore_errors: true
+
+- name: Display Close Logic App webhook URL (for SNOW Business Rule)
+  debug:
+    msg: "Close Logic App webhook: {{ close_trigger_url.response[0].value | default('Deploy complete — retrieve URL from Azure Portal') }}"

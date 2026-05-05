@@ -1,0 +1,56 @@
+---
+# ---------------------------------------------------------------------------
+# Task 01 — Prerequisites
+# Creates: Resource Group, User-Assigned Managed Identity, RBAC, KV API connection
+# Maps to: John Joyner's steps 1, 5
+# ---------------------------------------------------------------------------
+
+- name: Create resource group
+  azure_rm_resourcegroup:
+    name: "{{ resource_group_name }}"
+    location: "{{ location }}"
+
+- name: Create User-Assigned Managed Identity (ITSM-MI)
+  azure_rm_resource:
+    resource_group: "{{ resource_group_name }}"
+    provider: ManagedIdentity
+    resource_type: userAssignedIdentities
+    resource_name: "{{ managed_identity_name }}"
+    api_version: "2023-01-31"
+    body:
+      location: "{{ location }}"
+  register: mi_result
+
+- name: Assign Reader role to ITSM-MI on subscription
+  azure_rm_roleassignment:
+    scope: "/subscriptions/{{ subscription_id }}"
+    assignee_object_id: "{{ mi_result.response.properties.principalId }}"
+    role_definition_id: >-
+      /subscriptions/{{ subscription_id }}/providers/Microsoft.Authorization/roleDefinitions/acdd72a7-3385-48ef-bd42-f606fba81ae7
+  ignore_errors: true  # idempotent — assignment may already exist
+
+- name: Assign Monitoring Contributor role to ITSM-MI on subscription
+  azure_rm_roleassignment:
+    scope: "/subscriptions/{{ subscription_id }}"
+    assignee_object_id: "{{ mi_result.response.properties.principalId }}"
+    role_definition_id: >-
+      /subscriptions/{{ subscription_id }}/providers/Microsoft.Authorization/roleDefinitions/749f88d5-cbae-40b8-bcfc-e573ddc772fa
+  ignore_errors: true
+
+- name: Create Key Vault API connection (oauthMI — Managed Identity, no SPN)
+  azure_rm_resource:
+    resource_group: "{{ resource_group_name }}"
+    provider: Web
+    resource_type: connections
+    resource_name: "{{ kv_connection_name }}"
+    api_version: "2016-06-01"
+    body:
+      location: "{{ location }}"
+      properties:
+        displayName: "{{ kv_connection_name }}"
+        api:
+          id: >-
+            /subscriptions/{{ subscription_id }}/providers/Microsoft.Web/locations/{{ location }}/managedApis/keyvault
+        parameterValueType: Alternative
+        alternativeParameterValues:
+          vaultName: "{{ key_vault_name }}"

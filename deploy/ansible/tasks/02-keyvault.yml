@@ -1,0 +1,54 @@
+---
+# ---------------------------------------------------------------------------
+# Task 02 — Key Vault + Secrets
+# Creates Key Vault with RBAC authorization, grants ITSM-MI access, stores SNOW credentials
+# Maps to: John Joyner's steps 3–4
+# ---------------------------------------------------------------------------
+
+- name: Create Key Vault (RBAC authorization mode)
+  azure_rm_keyvault:
+    resource_group: "{{ resource_group_name }}"
+    vault_name: "{{ key_vault_name }}"
+    vault_tenant: "{{ lookup('env','AZURE_TENANT_ID') }}"
+    sku:
+      family: A
+      name: standard
+    enable_rbac_authorization: true
+    enable_soft_delete: true
+
+- name: Assign Key Vault Secrets Officer to deploying identity (for secret creation)
+  azure_rm_roleassignment:
+    scope: >-
+      /subscriptions/{{ subscription_id }}/resourceGroups/{{ resource_group_name }}/providers/Microsoft.KeyVault/vaults/{{ key_vault_name }}
+    assignee_object_id: "{{ lookup('env','AZURE_OBJECT_ID') }}"
+    role_definition_id: >-
+      /subscriptions/{{ subscription_id }}/providers/Microsoft.Authorization/roleDefinitions/b86a8fe4-44ce-4948-aee5-eccb2c155cd7
+  ignore_errors: true
+
+- name: Assign Key Vault Secrets User to ITSM-MI (read-only for Logic Apps)
+  azure_rm_roleassignment:
+    scope: >-
+      /subscriptions/{{ subscription_id }}/resourceGroups/{{ resource_group_name }}/providers/Microsoft.KeyVault/vaults/{{ key_vault_name }}
+    assignee_object_id: "{{ mi_result.response.properties.principalId }}"
+    role_definition_id: >-
+      /subscriptions/{{ subscription_id }}/providers/Microsoft.Authorization/roleDefinitions/4633458b-17de-408a-b874-0445c86b69e6
+  ignore_errors: true
+
+- name: Store SNOW instance URL in Key Vault
+  azure_rm_keyvaultsecret:
+    keyvault_uri: "https://{{ key_vault_name }}.vault.azure.net"
+    secret_name: ItsmApiIntegrationCode
+    secret_value: "{{ snow_instance_url }}"
+
+- name: Store SNOW username in Key Vault
+  azure_rm_keyvaultsecret:
+    keyvault_uri: "https://{{ key_vault_name }}.vault.azure.net"
+    secret_name: ItsmApiUserName
+    secret_value: "{{ snow_username }}"
+
+- name: Store SNOW password in Key Vault
+  azure_rm_keyvaultsecret:
+    keyvault_uri: "https://{{ key_vault_name }}.vault.azure.net"
+    secret_name: ItsmApiSecret
+    secret_value: "{{ snow_password }}"
+  no_log: true  # suppress secret from Ansible output

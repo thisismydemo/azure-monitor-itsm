@@ -1,0 +1,61 @@
+---
+# ---------------------------------------------------------------------------
+# Task 06 — Enable Logic Apps
+# Enables both Logic Apps (they deploy disabled by default — John's zero-trust design).
+# Maps to: John Joyner's step 14
+# ---------------------------------------------------------------------------
+
+- name: Enable Alert Logic App
+  azure_rm_resource:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows
+    resource_name: "{{ alert_logic_app_name }}"
+    api_version: "2019-05-01"
+    body:
+      location: "{{ location }}"
+      properties:
+        state: Enabled
+
+- name: Enable Close Logic App
+  azure_rm_resource:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows
+    resource_name: "{{ close_logic_app_name }}"
+    api_version: "2019-05-01"
+    body:
+      location: "{{ location }}"
+      properties:
+        state: Enabled
+
+- name: Verify Alert Logic App is enabled
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows
+    resource_name: "{{ alert_logic_app_name }}"
+    api_version: "2019-05-01"
+  register: alert_la_state
+
+- name: Verify Close Logic App is enabled
+  azure_rm_resource_info:
+    resource_group: "{{ resource_group_name }}"
+    provider: Logic
+    resource_type: workflows
+    resource_name: "{{ close_logic_app_name }}"
+    api_version: "2019-05-01"
+  register: close_la_state
+
+- name: Report Logic App states
+  debug:
+    msg:
+      - "Alert Logic App state: {{ alert_la_state.response[0].properties.state }}"
+      - "Close Logic App state: {{ close_la_state.response[0].properties.state }}"
+
+- name: Fail if either Logic App is not enabled
+  fail:
+    msg: "One or more Logic Apps failed to enable. Check the Azure Portal."
+  when: >-
+    alert_la_state.response[0].properties.state != 'Enabled' or
+    close_la_state.response[0].properties.state != 'Enabled'

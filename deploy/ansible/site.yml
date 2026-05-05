@@ -1,0 +1,81 @@
+---
+# =============================================================================
+# Azure Monitor → ServiceNow Integration — Ansible Playbook
+# =============================================================================
+# Prerequisites:
+#   pip install ansible azure-cli
+#   ansible-galaxy collection install -r deploy/ansible/requirements.yml
+#   az login  (or set AZURE_* env vars for service principal)
+#
+# Usage:
+#   ansible-playbook deploy/ansible/site.yml \
+#     -e "snow_instance_url=https://dev123456.service-now.com" \
+#     -e "snow_username=azure_monitor_svc" \
+#     -e "snow_password=<password>"
+#
+# Or with ansible-vault for secrets:
+#   ansible-vault encrypt_string '<password>' --name snow_password
+#   ansible-playbook deploy/ansible/site.yml --ask-vault-pass
+#
+# Skip tags to run only specific steps:
+#   ansible-playbook deploy/ansible/site.yml --tags keyvault,logic-apps
+#
+# Auth: Managed Identity ONLY on Azure side.
+#   SNOW credentials stored in Key Vault — never in playbook vars.
+# =============================================================================
+
+- name: Azure Monitor → ServiceNow Integration
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_prompt:
+    - name: snow_password
+      prompt: "ServiceNow integration account password"
+      private: true
+      when: snow_password is not defined
+
+  tasks:
+
+    - name: Validate required variables
+      assert:
+        that:
+          - snow_instance_url | length > 0
+          - snow_username | length > 0
+          - snow_password | length > 0
+          - subscription_id | length > 0
+        fail_msg: >-
+          Missing required variables. Pass snow_instance_url, snow_username, snow_password
+          and ensure AZURE_SUBSCRIPTION_ID is set.
+
+    - name: "[01] Prerequisites — Resource Group, Managed Identity, RBAC, KV API Connection"
+      include_tasks: tasks/01-prerequisites.yml
+      tags: [prerequisites]
+
+    - name: "[02] Key Vault — Create vault and store ServiceNow credentials"
+      include_tasks: tasks/02-keyvault.yml
+      tags: [keyvault]
+
+    - name: "[03] Logic Apps — Deploy Alert and Close Logic Apps (disabled by default)"
+      include_tasks: tasks/03-logic-apps.yml
+      tags: [logic-apps]
+
+    - name: "[04] Key Vault Firewall — Restrict KV to Logic App outbound IPs"
+      include_tasks: tasks/04-firewall.yml
+      tags: [firewall]
+
+    - name: "[05] Action Group — Create Azure Monitor Action Group"
+      include_tasks: tasks/05-action-group.yml
+      tags: [action-group]
+
+    - name: "[06] Enable — Enable both Logic Apps"
+      include_tasks: tasks/06-enable.yml
+      tags: [enable]
+
+    - name: Deployment complete
+      debug:
+        msg:
+          - "✅ Azure Monitor → ServiceNow integration deployed successfully."
+          - "📋 NEXT STEP (manual): Configure SNOW Business Rule."
+          - "   See docs/servicenow-pdi-setup.md and src/servicenow/snow-automation-rule-script.js"
+          - "   Use the Close Logic App webhook URL printed above."
